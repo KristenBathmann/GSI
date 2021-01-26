@@ -14,7 +14,9 @@ set C_COMP_MP mpcc
 
 # Load compiler, mpi, cmake, and hdf5/netcdf
 module load intel/18.0.5.274
-
+module load hdf5/1.10.4
+module load netcdf/4.6.1
+#module load contrib
 # python
 module use -a /contrib/anaconda/modulefiles
 module load anaconda/2.3.0 
@@ -39,8 +41,8 @@ module load w3emc/2.4.0
 module load w3nco/2.2.0
 
 module use /scratch1/NCEPDEV/nems/emc.nemspara/soft/modulefiles
-module load hdf5_parallel/1.10.6.release
-module load netcdf_parallel/4.7.4.release
+#module load hdf5_parallel/1.10.6.release
+#module load netcdf_parallel/4.7.4.release
 
 # Set environmental variables to allow correlated error to reproduce on Hera
 export MKL_NUM_THREADS=4

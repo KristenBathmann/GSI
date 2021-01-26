@@ -78,7 +78,11 @@ module radinfo
 
 ! !USES:
 
-  use kinds, only: r_kind,i_kind,r_quad
+  use kinds, only: r_kind,i_kind,r_quad,r_double !KAB double,RR
+  use RR, only: Evecs1,Evecs2,Evecs3,noise1,noise2,noise3
+  use RR, only: rmean1,rmean2,rmean3
+  use RR, only: nchan1,nchan2,nchan3,nvecs1,nvecs2,nvecs3
+  use RR, only: indR,nch_iasia,wav
   use read_diag, only: set_radiag
   implicit none
 
@@ -611,6 +615,7 @@ contains
     use constants, only: zero,one,zero_quad
     use mpimod, only: mype
     use mpeu_util, only: perr,die
+    use RR !KAB
     implicit none
 
 ! !INPUT PARAMETERS:
@@ -645,7 +650,7 @@ contains
     logical cold_start_seviri         ! flag to fix wrong channel numbers for seviri.  True = fix, false = already correct
 
     integer(i_kind) binary_iextra_det(10)
-
+    integer(i_kind):: ja,fchan1,fchan2,fchan3,jj !KAB this line
     data lunin / 49 /
 
 !============================================================================
@@ -685,7 +690,10 @@ contains
       close(lunin)
       return
     end if
-
+!KAB
+call read_eig('IASIB1v',nchan1,nvecs1,fchan1,Evecs1,noise1,rmean1)
+call read_eig('IASIB2v',nchan2,nvecs2,fchan2,Evecs2,noise2,rmean2)
+call read_eig('IASIB3v',nchan3,nvecs3,fchan3,Evecs3,noise3,rmean3)
 
 !   Allocate arrays to hold radiance information
 !     nuchan    - channel number
@@ -755,7 +763,12 @@ contains
          case ('airs')
             nusis(j)='airs_aqua'
          case ('iasi')
-            if (index(nusis(j),'metop-a') /= 0) nusis(j)='iasi_metop-a'
+!KAB            if (index(nusis(j),'metop-a') /= 0) nusis(j)='iasi_metop-a'
+            if (index(nusis(j),'metop-a') /= 0) then
+              nusis(j)='iasi_metop-a'
+!              if (iuse_rad(j)>0) ja=ja+1
+              ja=ja+1
+            endif
             if (index(nusis(j),'metop-b') /= 0) nusis(j)='iasi_metop-b'
             if (index(nusis(j),'metop-c') /= 0) nusis(j)='iasi_metop-c'
        end select 
@@ -796,6 +809,22 @@ contains
 
        j=j+1
     end do
+!KAB find iasia in nusis, create indR and reduce the evecs,rmean,noise
+    allocate(indR(ja),wav(ja))
+    ja=0
+    do jj=1,j
+      if (nusis(jj)=='iasi_metop-a') then
+!        if (iuse_rad(j)>0) then
+          ja=ja+1
+          indR(ja)=nuchan(jj)
+          wav(ja)=645.0_r_double+(indR(ja)-1)*0.25_r_double
+!        endif
+      endif
+    enddo
+    nch_iasia=ja
+    wav=wav*100.0_r_double
+!end KAB
+
     close(lunin)
 100 format(a1,a120)
 110 format(i4,1x,a20,' chan= ',i4,  &
@@ -1313,6 +1342,11 @@ contains
     if(allocated(ang_rad)) deallocate(ang_rad)
     if(allocated(ifactq)) deallocate(ifactq)
     if(allocated(inew_rad)) deallocate(inew_rad)
+!KAB
+    if(allocated(Evecs1)) deallocate(Evecs1,Evecs2,Evecs3)
+    if(allocated(noise1)) deallocate(noise1,noise3,noise2)
+    if(allocated(rmean1)) deallocate(rmean1,rmean2,rmean3)
+    if(allocated(indR)) deallocate(indR,wav)
 
     if(allocated(iextra_det)) deallocate(iextra_det)
     if(allocated(icld_det)) deallocate(icld_det)

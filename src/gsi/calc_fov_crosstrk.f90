@@ -1578,7 +1578,7 @@
  valid=.true.
 
  if(instr == 18) then   ! iasi
-    ifov = (fov-1)/4 + 1
+    ifov = (fov-1)/4 + 1 !KAB
  else 
     ifov = fov
  endif
