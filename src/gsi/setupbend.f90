@@ -331,6 +331,7 @@ subroutine setupbend(obsLL,odiagLL, &
   nsigstart=nint(ns)
   ns=(r61/r63)*nsig+r18
   grids_dim=nint(ns)  ! grid points for integration of GPS bend
+
   ds=r10000
   allocate(ddnj(grids_dim),grid_s(grids_dim),ref_rad_s(grids_dim)) 
 

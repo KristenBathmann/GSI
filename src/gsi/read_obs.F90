@@ -380,7 +380,7 @@ subroutine read_obs_check (lexist,filename,jsatid,dtype,minuse,nread,wmof)
          satloop: do while(irdmg>=0)
 !        satloop: do while(ireadmg(lnbufr,subset,idate2) >= 0)
            if (wmo) call readerme(ibfmg,lnbufr,cmgtag,idate2,iret)
-           if(ireadsb(lnbufr)==0)then
+           if(ireadsb(lnbufr)==0)then !KAB here
              if (wmo) then
                call datelen(8)
                call ufbrep(lnbufr,satid,1,1,iret,'SAID')
@@ -392,7 +392,7 @@ subroutine read_obs_check (lexist,filename,jsatid,dtype,minuse,nread,wmof)
            if (wmo) then
              call crbmg(bfmg,MXBF,nbyt,irdmg)
            else
-             call readmg(lnbufr,subset,idate2,irdmg)
+             call readmg(lnbufr,subset,idate2,irdmg) !KAB here
            endif
 !end KAB
            if(nint(satid) == kidsat) then
@@ -404,11 +404,11 @@ subroutine read_obs_check (lexist,filename,jsatid,dtype,minuse,nread,wmof)
        else if(trim(filename) == 'prepbufr')then  ! RTod: wired-in filename is not a good idea
          lexist = .false.
          fileloop: do while(ireadmg(lnbufr,subset,idate2) >= 0)
-          do while(ireadsb(lnbufr)>=0)
+          do while(ireadsb(lnbufr)>=0) !KAB here
            call ufbint(lnbufr,rtype,1,1,iret,'TYP')
            kx=nint(rtype)
            do nc=1,nconvtype
-             if(trim(ioctype(nc)) == trim(dtype) .and. kx == ictype(nc) .and. icuse(nc) > minuse)then
+             if(trim(ioctype(nc)) == trim(dtype) .and. kx == ictype(nc) .and. icuse(nc) > minuse)then !KAB here
                lexist = .true.
                exit fileloop
              end if
@@ -812,8 +812,10 @@ subroutine read_obs(ndata,mype)
 
 !   Declare local variables
 !KAB
-    logical :: lexist1,lexist2, lexist3,lexist4, lexist5,lexist6,lexist7,lexist8
-    logical :: lexist9, lexist10,lexist11, lexist12,lexist13,lexist14 !KAB
+    logical :: lexist1,lexist2, lexist3,lexist4!, lexist5,lexist6,lexist7,lexist8
+!    logical :: lexist9, lexist10,lexist11, lexist12,lexist13,lexist14 !KAB
+!    logical :: lexist15,lexist16, lexist17,lexist18, lexist19,lexist20,lexist21,lexist22
+!    logical :: lexist23, lexist24,lexist25, lexist26,lexist27,lexist28,lexist29 !KAB
     logical :: lexist,ssmis,amsre,sndr,hirs,avhrr,lexistears,lexistdb,use_prsl_full,use_hgtl_full
     logical :: use_sfc,nuse,use_prsl_full_proc,use_hgtl_full_proc,seviri,mls,abi
     logical,dimension(ndat):: belong,parallel_read,ears_possible,db_possible
@@ -833,13 +835,19 @@ subroutine read_obs(ndata,mype)
     integer(i_kind),dimension(ndat):: npe_sub,npe_sub3,mpi_comm_sub,mype_root_sub,npe_order
     integer(i_kind),dimension(ndat):: ntasks1,ntasks
     integer(i_kind),dimension(ndat):: read_rec1,read_rec
-    integer(i_kind),dimension(ndat)::read_wmo_recc11,read_wmo_recc12,read_wmo_recc13,read_wmo_recc14,read_wmo_recc15
-    integer(i_kind),dimension(ndat)::read_wmo_recc16,read_wmo_recc17,read_wmo_recc18,read_wmo_recc19,read_wmo_recc110
-    integer(i_kind),dimension(ndat)::read_wmo_recc111,read_wmo_recc112,read_wmo_recc113,read_wmo_recc114
+    integer(i_kind),dimension(ndat)::read_wmo_recc11,read_wmo_recc12,read_wmo_recc13,read_wmo_recc14!,read_wmo_recc15
+!    integer(i_kind),dimension(ndat)::read_wmo_recc16,read_wmo_recc17,read_wmo_recc18,read_wmo_recc19,read_wmo_recc110
+!    integer(i_kind),dimension(ndat)::read_wmo_recc111,read_wmo_recc112,read_wmo_recc113,read_wmo_recc114,read_wmo_recc115
+!    integer(i_kind),dimension(ndat)::read_wmo_recc116,read_wmo_recc117,read_wmo_recc118,read_wmo_recc119,read_wmo_recc120
+!    integer(i_kind),dimension(ndat)::read_wmo_recc121,read_wmo_recc122,read_wmo_recc123,read_wmo_recc124,read_wmo_recc125
+!    integer(i_kind),dimension(ndat)::read_wmo_recc126,read_wmo_recc127,read_wmo_recc128,read_wmo_recc129
 !KAB
-    integer(i_kind),dimension(ndat)::read_wmo_rec1,read_wmo_rec2,read_wmo_rec3,read_wmo_rec4,read_wmo_rec5
-    integer(i_kind),dimension(ndat)::read_wmo_rec6,read_wmo_rec7,read_wmo_rec8,read_wmo_rec9,read_wmo_rec10
-    integer(i_kind),dimension(ndat)::read_wmo_rec11,read_wmo_rec12,read_wmo_rec13,read_wmo_rec14
+    integer(i_kind),dimension(ndat)::read_wmo_rec1,read_wmo_rec2,read_wmo_rec3,read_wmo_rec4!,read_wmo_rec5
+!    integer(i_kind),dimension(ndat)::read_wmo_rec6,read_wmo_rec7,read_wmo_rec8,read_wmo_rec9,read_wmo_rec10
+!    integer(i_kind),dimension(ndat)::read_wmo_rec11,read_wmo_rec12,read_wmo_rec13,read_wmo_rec14,read_wmo_rec15
+!    integer(i_kind),dimension(ndat)::read_wmo_rec16,read_wmo_rec17,read_wmo_rec18,read_wmo_rec19,read_wmo_rec20
+!    integer(i_kind),dimension(ndat)::read_wmo_rec21,read_wmo_rec22,read_wmo_rec23,read_wmo_rec24,read_wmo_rec25
+!    integer(i_kind),dimension(ndat)::read_wmo_rec26,read_wmo_rec27,read_wmo_rec28,read_wmo_rec29
 !KAB
     integer(i_kind),dimension(ndat):: read_ears_rec1,read_ears_rec
     integer(i_kind),dimension(ndat):: read_db_rec1,read_db_rec
@@ -922,16 +930,31 @@ subroutine read_obs(ndata,mype)
     read_wmo_recc12=0
     read_wmo_recc13=0
     read_wmo_recc14=0
-    read_wmo_recc15=0
-    read_wmo_recc16=0
-    read_wmo_recc17=0
-    read_wmo_recc18=0
-    read_wmo_recc19=0
-    read_wmo_recc110=0
-    read_wmo_recc111=0
-    read_wmo_recc112=0
-    read_wmo_recc113=0
-    read_wmo_recc114=0
+!    read_wmo_recc15=0
+!    read_wmo_recc16=0
+!    read_wmo_recc17=0
+!    read_wmo_recc18=0
+!    read_wmo_recc19=0
+!    read_wmo_recc110=0
+!    read_wmo_recc111=0
+!    read_wmo_recc112=0
+!    read_wmo_recc113=0
+!    read_wmo_recc114=0
+!    read_wmo_recc115=0
+!    read_wmo_recc116=0
+!    read_wmo_recc117=0
+!    read_wmo_recc118=0
+!    read_wmo_recc119=0
+!    read_wmo_recc120=0
+!    read_wmo_recc121=0
+!    read_wmo_recc122=0
+!    read_wmo_recc123=0
+!    read_wmo_recc124=0
+!    read_wmo_recc125=0
+!    read_wmo_recc126=0
+!    read_wmo_recc127=0
+!    read_wmo_recc128=0
+!    read_wmo_recc129=0
     read_db_rec1=0
     do i=1,ndat
        obstype=dtype(i)                   !     obstype  - observation types to process
@@ -1137,7 +1160,7 @@ subroutine read_obs(ndata,mype)
 if ((obstype=='iasi').and.(dplat(i)=='metop-a')) then
 else
              call gsi_inquire(lenbytes,lexist,trim(dfile(i)),mype)
-             call read_obs_check (lexist,trim(dfile(i)),dplat(i),dtype(i),minuse,read_rec1(i))
+             call read_obs_check (lexist,trim(dfile(i)),dplat(i),dtype(i),minuse,read_rec1(i)) !KAB here
              
 !   If no data set starting record to be 999999.  Note if this is not large
 !   enough code should still work - just does a bit more work.
@@ -1178,91 +1201,200 @@ else
  endif
 if ((obstype=='iasi').and.(dplat(i)=='metop-a')) then
 !KAB need to change this subroutine
-             call gsi_inquire(lenbytes,lexist1,trim(dfile(i))//'1.bfr',mype)
-             call read_obs_check(lexist1,trim(dfile(i))//'1.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist1,trim(dfile(i))//'4.bfr',mype)
+             call read_obs_check(lexist1,trim(dfile(i))//'4.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc11(i),.true.)
              if (lexist1) lexist=.true.
              if(.not.lexist1) read_wmo_recc11(i)=999999
              len4file=len4file+lenbytes/4 !KAB check this
              lexist=lexist .or. lexist1
-             call gsi_inquire(lenbytes,lexist2,trim(dfile(i))//'2.bfr',mype)
-             call read_obs_check (lexist2,trim(dfile(i))//'2.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist2,trim(dfile(i))//'5.bfr',mype)
+             call read_obs_check (lexist2,trim(dfile(i))//'5.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc12(i),.true.)
              if(.not.lexist2) read_wmo_recc12(i)=999999
              len4file=len4file+lenbytes/4 !KAB check this
+print *, 'rcheck ',lexist2,dplat(i),dtype(i),read_wmo_recc12(i)
              lexist=lexist .or. lexist2
-             call gsi_inquire(lenbytes,lexist3,trim(dfile(i))//'3.bfr',mype)
-             call read_obs_check(lexist3,trim(dfile(i))//'3.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist3,trim(dfile(i))//'6.bfr',mype)
+             call read_obs_check(lexist3,trim(dfile(i))//'6.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc13(i),.true.)
              if(.not.lexist3) read_wmo_recc13(i)=999999
              len4file=len4file+lenbytes/4 !KAB check this
              lexist=lexist .or. lexist3
-             call gsi_inquire(lenbytes,lexist4,trim(dfile(i))//'4.bfr',mype)
-             call read_obs_check(lexist4,trim(dfile(i))//'4.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist4,trim(dfile(i))//'7.bfr',mype)
+             call read_obs_check(lexist4,trim(dfile(i))//'7.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc14(i),.true.)
              if(.not.lexist4) read_wmo_recc14(i)=999999
              len4file=len4file+lenbytes/4 !KAB check this
              lexist=lexist .or. lexist4
-             call gsi_inquire(lenbytes,lexist5,trim(dfile(i))//'5.bfr',mype)
-             call read_obs_check(lexist5,trim(dfile(i))//'5.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc15(i),.true.)
-             if(.not.lexist5) read_wmo_recc15(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist5
-             call gsi_inquire(lenbytes,lexist6,trim(dfile(i))//'6.bfr',mype)
-             call read_obs_check(lexist6,trim(dfile(i))//'6.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc16(i),.true.)
-             if(.not.lexist6) read_wmo_recc16(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist6
-             call gsi_inquire(lenbytes,lexist7,trim(dfile(i))//'7.bfr',mype)
-             call read_obs_check(lexist7,trim(dfile(i))//'7.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc17(i),.true.)
-             if(.not.lexist7) read_wmo_recc17(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist7
-             call gsi_inquire(lenbytes,lexist8,trim(dfile(i))//'8.bfr',mype)
-             call read_obs_check(lexist8,trim(dfile(i))//'8.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc18(i),.true.)
-             if(.not.lexist8) read_wmo_recc18(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist8
-             call gsi_inquire(lenbytes,lexist9,trim(dfile(i))//'9.bfr',mype)
-             call read_obs_check(lexist9,trim(dfile(i))//'9.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc19(i),.true.)
-             if(.not.lexist9) read_wmo_recc19(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist9
-             call gsi_inquire(lenbytes,lexist10,trim(dfile(i))//'10.bfr',mype)
-             call read_obs_check(lexist10,trim(dfile(i))//'10.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc110(i),.true.)
-             if(.not.lexist10) read_wmo_recc110(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist10
-             call gsi_inquire(lenbytes,lexist11,trim(dfile(i))//'11.bfr',mype)
-             call read_obs_check(lexist11,trim(dfile(i))//'11.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc111(i),.true.)
-             if(.not.lexist11) read_wmo_recc111(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist11
-             call gsi_inquire(lenbytes,lexist12,trim(dfile(i))//'12.bfr',mype)
-             call read_obs_check(lexist12,trim(dfile(i))//'12.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc112(i),.true.)
-             if(.not.lexist12) read_wmo_recc112(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist12
-             call gsi_inquire(lenbytes,lexist13,trim(dfile(i))//'13.bfr',mype)
-             call read_obs_check(lexist13,trim(dfile(i))//'13.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc113(i),.true.)
-             if(.not.lexist13) read_wmo_recc113(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist13
-             call gsi_inquire(lenbytes,lexist14,trim(dfile(i))//'14.bfr',mype)
-             call read_obs_check(lexist14,trim(dfile(i))//'14.bfr',dplat(i),dtype(i),minuse, &
-                 read_wmo_recc114(i),.true.)
-             if(.not.lexist14) read_wmo_recc114(i)=999999
-             len4file=len4file+lenbytes/4 !KAB check this
-             lexist=lexist .or. lexist14
+
+!             call gsi_inquire(lenbytes,lexist5,trim(dfile(i))//'5.bfr',mype)
+!             call read_obs_check(lexist5,trim(dfile(i))//'5.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc15(i),.true.)
+!             if(.not.lexist5) read_wmo_recc15(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist5
+!             call gsi_inquire(lenbytes,lexist6,trim(dfile(i))//'6.bfr',mype)
+!             call read_obs_check(lexist6,trim(dfile(i))//'6.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc16(i),.true.)
+!             if(.not.lexist6) read_wmo_recc16(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist6
+!             call gsi_inquire(lenbytes,lexist7,trim(dfile(i))//'7.bfr',mype)
+!             call read_obs_check(lexist7,trim(dfile(i))//'7.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc17(i),.true.)
+!             if(.not.lexist7) read_wmo_recc17(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist7
+!             call gsi_inquire(lenbytes,lexist8,trim(dfile(i))//'8.bfr',mype)
+!             call read_obs_check(lexist8,trim(dfile(i))//'8.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc18(i),.true.)
+!             if(.not.lexist8) read_wmo_recc18(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist8
+!             call gsi_inquire(lenbytes,lexist9,trim(dfile(i))//'9.bfr',mype)
+!             call read_obs_check(lexist9,trim(dfile(i))//'9.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc19(i),.true.)
+!             if(.not.lexist9) read_wmo_recc19(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist9
+!             call gsi_inquire(lenbytes,lexist10,trim(dfile(i))//'10.bfr',mype)
+!             call read_obs_check(lexist10,trim(dfile(i))//'10.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc110(i),.true.)
+!             if(.not.lexist10) read_wmo_recc110(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist10
+!             call gsi_inquire(lenbytes,lexist11,trim(dfile(i))//'11.bfr',mype)
+!             call read_obs_check(lexist11,trim(dfile(i))//'11.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc111(i),.true.)
+!             if(.not.lexist11) read_wmo_recc111(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist11
+!             call gsi_inquire(lenbytes,lexist12,trim(dfile(i))//'12.bfr',mype)
+!             call read_obs_check(lexist12,trim(dfile(i))//'12.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc112(i),.true.)
+!             if(.not.lexist12) read_wmo_recc112(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist12
+!             call gsi_inquire(lenbytes,lexist13,trim(dfile(i))//'13.bfr',mype)
+!             call read_obs_check(lexist13,trim(dfile(i))//'13.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc113(i),.true.)
+!             if(.not.lexist13) read_wmo_recc113(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist13
+!
+!             call gsi_inquire(lenbytes,lexist14,trim(dfile(i))//'14.bfr',mype)
+!             call read_obs_check(lexist14,trim(dfile(i))//'14.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc114(i),.true.)
+!             if(.not.lexist14) read_wmo_recc114(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist14
+!
+!             call gsi_inquire(lenbytes,lexist15,trim(dfile(i))//'15.bfr',mype)
+!             call read_obs_check(lexist15,trim(dfile(i))//'15.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc115(i),.true.)
+!             if(.not.lexist15) read_wmo_recc115(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist15
+
+!             call gsi_inquire(lenbytes,lexist16,trim(dfile(i))//'16.bfr',mype)
+!             call read_obs_check(lexist16,trim(dfile(i))//'16.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc116(i),.true.)
+!             if(.not.lexist16) read_wmo_recc116(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist16
+
+!             call gsi_inquire(lenbytes,lexist17,trim(dfile(i))//'17.bfr',mype)
+!             call read_obs_check(lexist17,trim(dfile(i))//'17.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc117(i),.true.)
+!             if(.not.lexist17) read_wmo_recc117(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist17
+
+!             call gsi_inquire(lenbytes,lexist18,trim(dfile(i))//'18.bfr',mype)
+!             call read_obs_check(lexist18,trim(dfile(i))//'18.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc118(i),.true.)
+!             if(.not.lexist18) read_wmo_recc118(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist18
+
+!             call gsi_inquire(lenbytes,lexist19,trim(dfile(i))//'19.bfr',mype)
+!             call read_obs_check(lexist19,trim(dfile(i))//'19.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc119(i),.true.)
+!             if(.not.lexist19) read_wmo_recc119(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist19
+
+!             call gsi_inquire(lenbytes,lexist20,trim(dfile(i))//'20.bfr',mype)
+!             call read_obs_check(lexist20,trim(dfile(i))//'20.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc120(i),.true.)
+!             if(.not.lexist20) read_wmo_recc120(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist20
+
+!             call gsi_inquire(lenbytes,lexist21,trim(dfile(i))//'21.bfr',mype)
+!             call read_obs_check(lexist21,trim(dfile(i))//'21.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc121(i),.true.)
+!             if(.not.lexist21) read_wmo_recc121(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist21
+
+!             call gsi_inquire(lenbytes,lexist22,trim(dfile(i))//'22.bfr',mype)
+!             call read_obs_check(lexist22,trim(dfile(i))//'22.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc122(i),.true.)
+!             if(.not.lexist22) read_wmo_recc122(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist22
+
+!             call gsi_inquire(lenbytes,lexist23,trim(dfile(i))//'23.bfr',mype)
+!             call read_obs_check(lexist23,trim(dfile(i))//'23.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc123(i),.true.)
+!             if(.not.lexist23) read_wmo_recc123(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist23
+
+!             call gsi_inquire(lenbytes,lexist24,trim(dfile(i))//'24.bfr',mype)
+!             call read_obs_check(lexist24,trim(dfile(i))//'24.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc124(i),.true.)
+!             if(.not.lexist24) read_wmo_recc124(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist24
+
+!             call gsi_inquire(lenbytes,lexist25,trim(dfile(i))//'25.bfr',mype)
+!             call read_obs_check(lexist25,trim(dfile(i))//'25.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc125(i),.true.)
+!             if(.not.lexist25) read_wmo_recc125(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist25
+
+!             call gsi_inquire(lenbytes,lexist26,trim(dfile(i))//'26.bfr',mype)
+!             call read_obs_check(lexist26,trim(dfile(i))//'26.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc126(i),.true.)
+!             if(.not.lexist26) read_wmo_recc126(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist26
+
+!             call gsi_inquire(lenbytes,lexist27,trim(dfile(i))//'27.bfr',mype)
+!             call read_obs_check(lexist27,trim(dfile(i))//'27.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc127(i),.true.)
+!             if(.not.lexist27) read_wmo_recc127(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist27
+
+!             call gsi_inquire(lenbytes,lexist28,trim(dfile(i))//'28.bfr',mype)
+!             call read_obs_check(lexist28,trim(dfile(i))//'28.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc128(i),.true.)
+!             if(.not.lexist28) read_wmo_recc128(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist28
+
+!             call gsi_inquire(lenbytes,lexist29,trim(dfile(i))//'29.bfr',mype)
+!             call read_obs_check(lexist29,trim(dfile(i))//'29.bfr',dplat(i),dtype(i),minuse, &
+!                 read_wmo_recc129(i),.true.)
+!             if(.not.lexist29) read_wmo_recc129(i)=999999
+!             len4file=len4file+lenbytes/4 !KAB check this
+!             lexist=lexist .or. lexist29
+print *, 'rcheck 2',lexist,dplat(i),dtype(i),read_wmo_recc12(i)
 endif
              if(lexist) then
 !      Initialize number of reader tasks to 1.  For the time being
@@ -1285,31 +1417,45 @@ endif
           if(mype == 0)write(6,*) 'data type ',dsis(i), &
                 'not used in info file -- do not read file ',trim(dfile(i))
        end if
+!print *, 'rcheck2', trim(dfile(i))
     end do
 
-
-!   Distribute optimal number of reader tasks to all mpi tasks
-    call mpi_allreduce(ntasks1,ntasks,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!print *, 'rcheck2 ', dfile(i))!   Distribute optimal number of reader tasks to all mpi tasks
+    call mpi_allreduce(ntasks1,ntasks,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror) !KAB here
     call mpi_allreduce(read_rec1,read_rec,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror) 
     call mpi_allreduce(read_ears_rec1,read_ears_rec,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror) 
     call mpi_allreduce(read_db_rec1,read_db_rec,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror) 
-    call mpi_allreduce(read_db_rec1,read_db_rec,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_db_rec1,read_db_rec,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
 !KAB
     call mpi_allreduce(read_wmo_recc11,read_wmo_rec1,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
     call mpi_allreduce(read_wmo_recc12,read_wmo_rec2,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
     call mpi_allreduce(read_wmo_recc13,read_wmo_rec3,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
     call mpi_allreduce(read_wmo_recc14,read_wmo_rec4,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc15,read_wmo_rec5,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc16,read_wmo_rec6,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc17,read_wmo_rec7,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc18,read_wmo_rec8,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc19,read_wmo_rec9,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc110,read_wmo_rec10,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc111,read_wmo_rec11,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc112,read_wmo_rec12,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc113,read_wmo_rec13,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-    call mpi_allreduce(read_wmo_recc114,read_wmo_rec14,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
-
+!    call mpi_allreduce(read_wmo_recc15,read_wmo_rec5,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc16,read_wmo_rec6,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc17,read_wmo_rec7,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc18,read_wmo_rec8,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc19,read_wmo_rec9,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc110,read_wmo_rec10,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc111,read_wmo_rec11,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc112,read_wmo_rec12,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc113,read_wmo_rec13,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc114,read_wmo_rec14,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc115,read_wmo_rec15,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc116,read_wmo_rec16,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc117,read_wmo_rec17,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc118,read_wmo_rec18,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc119,read_wmo_rec19,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc120,read_wmo_rec20,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc121,read_wmo_rec21,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc122,read_wmo_rec22,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc123,read_wmo_rec23,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc124,read_wmo_rec24,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc125,read_wmo_rec25,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc126,read_wmo_rec26,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc127,read_wmo_rec27,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc128,read_wmo_rec28,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
+!    call mpi_allreduce(read_wmo_recc129,read_wmo_rec29,ndat,mpi_integer,mpi_sum,mpi_comm_world,ierror)
 !   Limit number of requested tasks per type to be <= total available tasks
     npemax=0
     npetot=0
@@ -1860,10 +2006,14 @@ endif
                      infile,lunout,obstype,nread,npuse,nouse,twind,sis,&
                      mype_root,mype_sub(mm1,i),npe_sub(i),mpi_comm_sub(i),nobs_sub1(1,i), &
                      read_rec(i),read_ears_rec(i),read_db_rec(i),&
-                     read_wmo_rec1(i), read_wmo_rec2(i), read_wmo_rec3(i),read_wmo_rec4(i), &
-                     read_wmo_rec5(i), read_wmo_rec6(i), read_wmo_rec7(i),read_wmo_rec8(i), &
-                     read_wmo_rec9(i), read_wmo_rec10(i), read_wmo_rec11(i),read_wmo_rec12(i), &
-                     read_wmo_rec13(i), read_wmo_rec14(i), dval_use) !KAB
+                     read_wmo_rec1(i), read_wmo_rec2(i), read_wmo_rec3(i),read_wmo_rec4(i),dval_use)! &
+!                     read_wmo_rec5(i), read_wmo_rec6(i), read_wmo_rec7(i),read_wmo_rec8(i), &
+!                     read_wmo_rec9(i), read_wmo_rec10(i), read_wmo_rec11(i),dval_use)!read_wmo_rec12(i), &
+!                     read_wmo_rec13(i), read_wmo_rec14(i),read_wmo_rec15(i),read_wmo_rec16(i), &
+!                     read_wmo_rec17(i), read_wmo_rec18(i),read_wmo_rec19(i),read_wmo_rec20(i),  &
+!                     read_wmo_rec21(i), read_wmo_rec22(i),read_wmo_rec23(i),read_wmo_rec24(i), &
+!                     read_wmo_rec25(i), read_wmo_rec26(i),read_wmo_rec27(i),read_wmo_rec28(i),  &
+!                     read_wmo_rec29(i),dval_use) !KAB
                 string='READ_IASI'
 
 !            Process cris data

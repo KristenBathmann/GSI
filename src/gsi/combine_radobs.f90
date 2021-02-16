@@ -131,11 +131,13 @@ subroutine combine_radobs(mype_sub,mype_root,&
         
      end do
      deallocate(nloc)
-
+!print *, 'combine rad ', ndata,data_all(:,1)
+!print *, 'combine rad 1', mype_root,mpi_rtype
 !    get all data on process mype_root
 !    data_all(:,:) = zero
      call mpi_reduce(data_all_in,data_all,nele*ndata,mpi_rtype,mpi_sum,&
           mype_root,mpi_comm_sub,ierror)
+!print *, 'combine rad 2', mype_root,mpi_rtype
      deallocate(data_all_in)
   else
 
