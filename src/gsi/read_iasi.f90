@@ -1,10 +1,8 @@
 subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
      infile,lunout,obstype,nread,ndata,nodata,twind,sis,&
      mype_root,mype_sub,npe_sub,mpi_comm_sub,nobs, &
-     nrec_start,nrec_start_ears,nrec_start_db,nrec_start1, &! dval_use)!&
-     nrec_start2,nrec_start3,nrec_start4, dval_use)!nrec_start5,nrec_start6, &
-!     nrec_start7,nrec_start8,nrec_start9,nrec_start10,nrec_start11, &
-!     nrec_start12,nrec_start13,nrec_start14,dval_use)
+     nrec_start,nrec_start_ears,nrec_start_db,nrec_start1, &
+     nrec_start2,nrec_start3,nrec_start4, dval_use)
 !$$$  subprogram documentation block
 !                .      .    .                                       .
 ! subprogram:    read_iasi                  read bufr format iasi data
@@ -139,9 +137,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
 ! BUFR format for IASISPOT 
 ! Input variables
   integer(i_kind)  ,intent(in   ) :: mype,nrec_start,nrec_start_ears,nrec_start_db
-  integer(i_kind)  ,intent(in   ) :: nrec_start1,nrec_start2,nrec_start3,nrec_start4!,nrec_start5
-!  integer(i_kind)  ,intent(in   ) :: nrec_start6,nrec_start7,nrec_start8,nrec_start9,nrec_start10
-!  integer(i_kind)  ,intent(in   ) :: nrec_start11,nrec_start12,nrec_start13,nrec_start14
+  integer(i_kind)  ,intent(in   ) :: nrec_start1,nrec_start2,nrec_start3,nrec_start4
   integer(i_kind)  ,intent(in   ) :: ithin
   integer(i_kind)  ,intent(inout) :: isfcalc
   integer(i_kind)  ,intent(in   ) :: lunout
@@ -220,7 +216,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
   logical          :: iasi,quiet
 
   integer(i_kind)  :: ifov, instr, iscn, ioff, sensorindex
-  integer(i_kind)  :: i, j, l, iskip, ifovn, bad_line, ksatid, kidsat, llll,llllend !KAB
+  integer(i_kind)  :: i, j, l, iskip, ifovn, bad_line, ksatid, kidsat, llll,llllend,llllbegin !KAB
   integer(i_kind)  :: nreal, isflg
   integer(i_kind)  :: itx, k, nele, itt, n
   integer(i_kind):: iexponent,maxinfo, bufr_nchan
@@ -281,10 +277,12 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
   if (nst_gsi > 0 ) then
     call gsi_nstcoupler_skindepth(obstype, zob)         ! get penetration depth (zob) for the obstype
   endif
+  llllbegin=1
   llllend=3
   if(jsatid == 'metop-a') then 
     kidsat=4 !KAB
     llllend=7
+    llllbegin=4
   endif
   if(jsatid == 'metop-b')kidsat=3
   if(jsatid == 'metop-c')kidsat=5
@@ -427,7 +425,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
 ! Big loop over standard data feed and possible rars/db data
 ! llll=1 is normal feed, llll=2 RARS/EARS data, llll=3 DB/UW data)
 !KAB add another llll? 4
-  ears_db_loop: do llll= 1, llllend!17
+  ears_db_loop: do llll= llllbegin, llllend!17
      infile2=''
      infile3=''
      infile4=''
@@ -443,24 +441,20 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
      elseif(llll==4) then
         nrec_startx=nrec_start1
         infile3=trim(infile)//'4.bfr'
-!         if (kidsat==3) cycle ears_db_loop
         call closbf(lnbufr)
         call cobfl('iasibufr4.bfr','r')
      elseif(llll==5) then
         nrec_startx=nrec_start2
-!        if (kidsat==3) cycle ears_db_loop
         call closbf(lnbufr)
         infile3=trim(infile)//'5.bfr'
         call cobfl('iasibufr5.bfr','r')
      elseif(llll==6) then
         nrec_startx=nrec_start3
-!        if (kidsat==3) cycle ears_db_loop
         call closbf(lnbufr)
         infile3=trim(infile)//'6.bfr'
         call cobfl('iasibufr6.bfr','r')
      elseif(llll==7) then
         nrec_startx=nrec_start4
-!        if (kidsat==3) cycle ears_db_loop
         call closbf(lnbufr)
         infile3=trim(infile)//'7.bfr'
         call cobfl('iasibufr7.bfr','r')
@@ -469,16 +463,6 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
 
 !KABB
      if (llll>=4) then
-!        if (kidsat==3) cycle ears_db_loop
-!        call closbf(lnbufr)
-!print *, 'infile ',trim(infile2)
-!        if (llll<13) then
-!          call cobfl(infile3,'r')
-!        else
-!          call cobfl(trim(infile4),'r')
-!        endif
-!print *, 'infile out',trim(infile2)
-!!KAB for some reason these print statements need to stay
         open(unit=lnbufr,file='/dev/null')
         call datelen(8)
         call crbmg(bfmg,MXBF,nbyt,irdmg)
@@ -538,7 +522,6 @@ print *, 'riasia irdmg ', irdmg
                  allocate(bufr_chan_test(bufr_nchan))
                  bufr_chan_test(:)=0
               endif       !  allocation if
-!              call ufbint(lnbufr,linele,5,1,iret,'FOVN SLNM QGFQ SELV SAID')
               call ufbint(lnbufr,linele,5,1,iret,'FOVN SLNM SOZA SELV SAID')
 !            Extract satellite id.  If not the one we want, read next subset
               ksatid=nint(linele(5))
@@ -566,7 +549,7 @@ print *, 'riasia irdmg ', irdmg
               endif
               call ufbint(lnbufr,allspot,13,1,iret,allspotlist)
              if(iret /= 1) cycle read_loop
-print *, 'iasia saza ',allspot(10),ifov
+!print *, 'iasia saza ',allspot(10),ifov
            else
 !             Get the size of the channels and radiance (allchan) array
               call ufbint(lnbufr,crchn_reps,1,1,iret,'(IASICHN)')
@@ -616,7 +599,6 @@ print *, 'iasia saza ',allspot(10),ifov
               endif
 
               call ufbint(lnbufr,allspot,13,1,iret,allspotlist)
-!print *, 'iasib saza ',allspot(10),ifov
               if(iret /= 1) cycle read_loop
            endif
 !!!!!!!!!!!!KABB
@@ -726,20 +708,12 @@ print *, 'iasia saza ',allspot(10),ifov
                  ' STRANGE OBS INFO(FOVN,SLNM,SAZA,BEARAZ):', ifov, iscn, allspot(10),allspot(11)
               cycle read_loop
            endif
-!           if (llll>=4) then
-!             if (ifov <=61) sat_zenang=-sat_zenang
-!           else
-             if ( ifov <= 60 ) sat_zenang = -sat_zenang
-!           endif
+           if ( ifov <= 60 ) sat_zenang = -sat_zenang
 
 !          Compare IASI satellite scan angle and zenith angle
            piece = -step_adjust
            if ( mod(ifovn,2) == 1) piece = step_adjust
-!           if (llll>=4) then
-!             lza = ((start + float((ifov)/4)*step) + piece)*deg2rad
-!           else
-             lza = ((start + float((ifov-1)/4)*step) + piece)*deg2rad
-!           endif
+           lza = ((start + float((ifov-1)/4)*step) + piece)*deg2rad
            sat_height_ratio = (earth_radius + linele(4))/earth_radius
            lzaest = asin(sat_height_ratio*sin(lza))*rad2deg
            if (abs(sat_zenang - lzaest) > one) then
@@ -778,12 +752,10 @@ print *, 'iasia saza ',allspot(10),ifov
            crit1 = crit1 + rlndsea(isflg)
  
            call checkob(dist1,crit1,itx,iuse)
-           if(.not. iuse) then
-!print *, 'READ_IASI iuse1',sis
-cycle read_loop
-endif !K
+           if(.not. iuse) cycle read_loop
+
 !          Clear Amount  (percent clear)
-           call ufbrep(lnbufr,cloud_frac,1,7,iret,'FCPH')
+           call ufbrep(lnbufr,cloud_frac,1,7,iret,'FCPH') !KAB is this in the file
            clr_amt = cloud_frac(1)
            clr_amt=max(clr_amt,zero)
            clr_amt=min(clr_amt,100.0_r_kind)
@@ -794,11 +766,7 @@ endif !K
            crit1 = crit1 + pred
  
            call checkob(dist1,crit1,itx,iuse)
-
-           if(.not. iuse) then
-!print *, 'READ_IASI iuse2',sis
-cycle read_loop
-endif
+           if(.not. iuse) cycle read_loop
 !KAB
            if (llll>=4) then
              cscale=1.0
@@ -883,21 +851,16 @@ endif
                  if(iuse_rad(ioff+i) >= 0)iskip = iskip + 1
               endif
            end do skip_loop
-!           if(iskip > 0 .and. print_verbose)write(6,*) ' READ_IASI : iskip > 0 ',iskip
-           if( iskip > 0 ) then 
-!print *, 'READ_IASI iskip',sis
-cycle read_loop 
-endif
+
+           if(iskip > 0 .and. print_verbose)write(6,*) ' READ_IASI : iskip > 0 ',iskip
+           if( iskip > 0 ) cycle read_loop 
 
            crit1=crit1 + ten*float(iskip)
 
 !          Map obs to grids
            call finalcheck(dist1,crit1,itx,iuse)
-           if(.not. iuse) then
-!print *, 'READ_IASI iuse3',sis
-cycle read_loop
-endif !KAB
-!KAB nread could move here
+           if(.not. iuse) cycle read_loop
+
 !
 !          interpolate NSST variables to Obs. location and get dtw, dtc, tz_tr
 !
@@ -971,18 +934,14 @@ endif !KAB
 !if llll=4 call readerme, else call readmg KABB
         if (llll>=4) then
            call crbmg(bfmg,MXBF,nbyt,irdmg)
-icoun=icoun+1
-!print *, 'riasi icoun inner ', icoun, infile3, irdmg,llll
         else
            call readmg(lnbufr,subset,idate,irdmg)
-!print *, 'riasi other ', irdmg,llll
         endif
      enddo read_subset
 
      call closbf(lnbufr)
-print *, 'icoun riasi icoun,nread,file', icoun,nread,infile3,Rad(1)
+  print *, 'riasi loop nread', nread, llll
   end do ears_db_loop
-!print *, 'icoun riasi ', icoun
   deallocate(temperature, allchan, bufr_chan_test)
   deallocate(channel_number,sc_index)
   deallocate(bufr_index)
@@ -995,7 +954,8 @@ print *, 'icoun riasi icoun,nread,file', icoun,nread,infile3,Rad(1)
 
 ! If multiple tasks read input bufr file, allow each tasks to write out
 ! information it retained and then let single task merge files together
-print *, 'riasi ndata', nread
+print *, 'riasi ndata', nread,llll,llllend,trim(infile2)
+nread=nread/16
   call combine_radobs(mype_sub,mype_root,npe_sub,mpi_comm_sub,&
      nele,itxmax,nread,ndata,data_all,score_crit,nrec)
 
