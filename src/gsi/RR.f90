@@ -10,8 +10,9 @@ public:: Evecs1,Evecs2,Evecs3,noise1,noise2,noise3
 public:: rmean1,rmean2,rmean3
 public:: nchan1,nchan2,nchan3,nvecs1,nvecs2,nvecs3
 public:: indR,nch_iasia,wav
-real(r_double),allocatable,dimension(:,:)::Evecs1,Evecs2,Evecs3
-real(r_double),allocatable,dimension(:):: noise1,noise2,noise3,rmean1,rmean2,rmean3,wav
+real(r_double),allocatable,dimension(:,:,:)::Evecs1,Evecs2,Evecs3
+real(r_double),allocatable,dimension(:,:):: noise1,noise2,noise3,rmean1,rmean2,rmean3
+real(r_double),allocatable,dimension(:)::wav
 integer(i_kind):: nchan1,nchan2,nchan3,nvecs1,nvecs2,nvecs3,nvecs,nch_iasia
 integer(i_kind),dimension(:),allocatable:: indR
 contains
@@ -62,10 +63,11 @@ call h5aclose_f(nvi,stat)
 call h5dclose_f(eveci,stat)
 end subroutine read_eig
 
-subroutine reconstruct(PC1,PC2,PC3,sq,Rad)
+subroutine reconstruct(PC1,PC2,PC3,sq,Rad,satid)
 !use radinfo, only: indR, nch_iasia
 implicit none
 real(r_double),dimension(:,:),intent(in):: PC1,PC2,PC3,sq
+integer(i_kind), intent(in):: satid
 real(r_double),dimension(:),intent(out):: Rad
 integer(i_kind)::r,rs,ds,totchan,coun
 real(r_double):: Rsum1,Rsum2,Rsum3
@@ -83,26 +85,26 @@ do r=1,totchan
         rs=r-nchan1-nchan2
         Rsum3=0.0_r_double
         do ds=1,nvecs3
-           Rsum3=Rsum3+PC3(1,ds)*Evecs3(rs,ds)
+           Rsum3=Rsum3+PC3(1,ds)*Evecs3(rs,ds,satid)
         enddo
         Rsum3=Rsum3*sq(3,1)
-        Rad(coun)=noise3(rs)*(rmean3(rs)+Rsum3)
+        Rad(coun)=noise3(rs,satid)*(rmean3(rs,satid)+Rsum3)
       elseif (r>(nchan1)) then !Band 2
         rs=r-nchan1
         Rsum2=0.0_r_double
         do ds=1,nvecs2
-           Rsum2=Rsum2+PC2(1,ds)*Evecs2(rs,ds)
+           Rsum2=Rsum2+PC2(1,ds)*Evecs2(rs,ds,satid)
         enddo
         Rsum2=Rsum2*sq(2,1)
-        Rad(coun)=noise2(rs)*(rmean2(rs)+Rsum2)
+        Rad(coun)=noise2(rs,satid)*(rmean2(rs,satid)+Rsum2)
       else !Band 1
         rs=r
         Rsum1=0.0_r_double
         do ds=1,nvecs1
-         Rsum1=Rsum1+PC1(1,ds)*Evecs1(rs,ds)
+         Rsum1=Rsum1+PC1(1,ds)*Evecs1(rs,ds,satid)
         enddo
         Rsum1=Rsum1*sq(1,1)
-        Rad(coun)=noise1(rs)*(rmean1(rs)+Rsum1)
+        Rad(coun)=noise1(rs,satid)*(rmean1(rs,satid)+Rsum1)
       endif
       coun=coun+1
     endif

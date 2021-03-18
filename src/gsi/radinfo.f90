@@ -648,7 +648,9 @@ contains
     logical cfound
     logical pcexist
     logical cold_start_seviri         ! flag to fix wrong channel numbers for seviri.  True = fix, false = already correct
-
+!KAB
+    real(r_double),dimension(:,:), allocatable::Evecs
+    real(r_double),dimension(:), allocatable::rmean,noise
     integer(i_kind) binary_iextra_det(10)
     integer(i_kind):: ja,fchan1,fchan2,fchan3,jj !KAB this line
     data lunin / 49 /
@@ -691,9 +693,71 @@ contains
       return
     end if
 !KAB
-call read_eig('IASIB1v',nchan1,nvecs1,fchan1,Evecs1,noise1,rmean1)
-call read_eig('IASIB2v',nchan2,nvecs2,fchan2,Evecs2,noise2,rmean2)
-call read_eig('IASIB3v',nchan3,nvecs3,fchan3,Evecs3,noise3,rmean3)
+!Metop-a
+call read_eig('IASIAB1v',nchan1,nvecs1,fchan1,Evecs,noise,rmean)
+allocate(Evecs1(nchan1,nvecs1,3),rmean1(nchan1,3),noise1(nchan1,3))
+Evecs1(:,:,1)=Evecs(:,:)
+rmean1(:,1)=rmean(:)
+noise1(:,1)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+call read_eig('IASIAB2v',nchan2,nvecs2,fchan2,Evecs,noise,rmean)
+allocate(Evecs2(nchan2,nvecs2,3),rmean2(nchan2,3),noise2(nchan2,3))
+Evecs2(:,:,1)=Evecs(:,:)
+rmean2(:,1)=rmean(:)
+noise2(:,1)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+call read_eig('IASIAB3v',nchan3,nvecs3,fchan3,Evecs,noise,rmean)
+allocate(Evecs3(nchan3,nvecs3,3),rmean3(nchan3,3),noise3(nchan3,3))
+Evecs3(:,:,1)=Evecs(:,:)
+rmean3(:,1)=rmean(:)
+noise3(:,1)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+!Metop-b
+call read_eig('IASIBB1v',nchan1,nvecs1,fchan1,Evecs,noise,rmean)
+allocate(Evecs1(nchan1,nvecs1,3),rmean1(nchan1,3),noise1(nchan1,3))
+Evecs1(:,:,2)=Evecs(:,:)
+rmean1(:,2)=rmean(:)
+noise1(:,2)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+call read_eig('IASIBB2v',nchan2,nvecs2,fchan2,Evecs,noise,rmean)
+allocate(Evecs2(nchan2,nvecs2,3),rmean2(nchan2,3),noise2(nchan2,3))
+Evecs2(:,:,2)=Evecs(:,:)
+rmean2(:,2)=rmean(:)
+noise2(:,2)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+call read_eig('IASIBB3v',nchan3,nvecs3,fchan3,Evecs,noise,rmean)
+allocate(Evecs3(nchan3,nvecs3,3),rmean3(nchan3,3),noise3(nchan3,3))
+Evecs3(:,:,2)=Evecs(:,:)
+rmean3(:,2)=rmean(:)
+noise3(:,2)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+!Metop-c
+call read_eig('IASICB1v',nchan1,nvecs1,fchan1,Evecs,noise,rmean)
+allocate(Evecs1(nchan1,nvecs1,3),rmean1(nchan1,3),noise1(nchan1,3))
+Evecs1(:,:,3)=Evecs(:,:)
+rmean1(:,3)=rmean(:)
+noise1(:,3)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+call read_eig('IASICB2v',nchan2,nvecs2,fchan2,Evecs,noise,rmean)
+allocate(Evecs2(nchan2,nvecs2,3),rmean2(nchan2,3),noise2(nchan2,3))
+Evecs2(:,:,3)=Evecs(:,:)
+rmean2(:,3)=rmean(:)
+noise2(:,3)=noise(:)
+deallocate(Evecs,noise,rmean)
+
+call read_eig('IASICB3v',nchan3,nvecs3,fchan3,Evecs,noise,rmean)
+allocate(Evecs3(nchan3,nvecs3,3),rmean3(nchan3,3),noise3(nchan3,3))
+Evecs3(:,:,3)=Evecs(:,:)
+rmean3(:,3)=rmean(:)
+noise3(:,3)=noise(:)
+deallocate(Evecs,noise,rmean)
 
 !   Allocate arrays to hold radiance information
 !     nuchan    - channel number
@@ -769,7 +833,10 @@ call read_eig('IASIB3v',nchan3,nvecs3,fchan3,Evecs3,noise3,rmean3)
 !              if (iuse_rad(j)>0) ja=ja+1
               ja=ja+1
             endif
-            if (index(nusis(j),'metop-b') /= 0) nusis(j)='iasi_metop-b'
+            if (index(nusis(j),'metop-b') /= 0) then 
+               nusis(j)='iasi_metop-b'
+               ja=ja+1
+            endif
             if (index(nusis(j),'metop-c') /= 0) nusis(j)='iasi_metop-c'
        end select 
 
@@ -810,10 +877,11 @@ call read_eig('IASIB3v',nchan3,nvecs3,fchan3,Evecs3,noise3,rmean3)
        j=j+1
     end do
 !KAB find iasia in nusis, create indR and reduce the evecs,rmean,noise
+    if (.not. (allocated(indR))) then
     allocate(indR(ja),wav(ja))
     ja=0
     do jj=1,j
-      if (nusis(jj)=='iasi_metop-a') then
+      if ((nusis(jj)=='iasi_metop-a').or.(nusis(jj)=='iasi_metop=b')) then
 !        if (iuse_rad(j)>0) then
           ja=ja+1
           indR(ja)=nuchan(jj)
@@ -823,6 +891,7 @@ call read_eig('IASIB3v',nchan3,nvecs3,fchan3,Evecs3,noise3,rmean3)
     enddo
     nch_iasia=ja
     wav=wav*100.0_r_double
+   endif
 !end KAB
 
     close(lunin)

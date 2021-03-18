@@ -2,7 +2,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
      infile,lunout,obstype,nread,ndata,nodata,twind,sis,&
      mype_root,mype_sub,npe_sub,mpi_comm_sub,nobs, &
      nrec_start,nrec_start_ears,nrec_start_db,nrec_start1, &
-     nrec_start2,nrec_start3,nrec_start4, dval_use)
+     nrec_start2,nrec_start3,nrec_start4, nrec_start5,nrec_start6,nrec_start7,dval_use)
 !$$$  subprogram documentation block
 !                .      .    .                                       .
 ! subprogram:    read_iasi                  read bufr format iasi data
@@ -137,7 +137,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
 ! BUFR format for IASISPOT 
 ! Input variables
   integer(i_kind)  ,intent(in   ) :: mype,nrec_start,nrec_start_ears,nrec_start_db
-  integer(i_kind)  ,intent(in   ) :: nrec_start1,nrec_start2,nrec_start3,nrec_start4
+  integer(i_kind)  ,intent(in   ) :: nrec_start1,nrec_start2,nrec_start3,nrec_start4,nrec_start5,nrec_start6,nrec_start7
   integer(i_kind)  ,intent(in   ) :: ithin
   integer(i_kind)  ,intent(inout) :: isfcalc
   integer(i_kind)  ,intent(in   ) :: lunout
@@ -250,7 +250,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
   integer(i_kind),parameter:: mxbfd4=mxbf/4
   integer(i_kind):: irdmg,nbyt,nvecs,nrep
   character*8:: cmgtag
-  integer(i_kind):: ibfmg(mxbfd4)
+  integer(i_kind):: ibfmg(mxbfd4),sati
   character*1:: bfmg(mxbf)
   equivalence (bfmg(1),ibfmg(1))
   real(r_double),dimension(:,:),allocatable:: PCs,PC1,PC2,PC3
@@ -277,15 +277,22 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
   if (nst_gsi > 0 ) then
     call gsi_nstcoupler_skindepth(obstype, zob)         ! get penetration depth (zob) for the obstype
   endif
-  llllbegin=1
-  llllend=3
+  llllbegin=4!1
+  llllend=8!3
   if(jsatid == 'metop-a') then 
     kidsat=4 !KAB
-    llllend=7
-    llllbegin=4
+!    llllend=4!10
+!    llllbegin=4
+    sati=1
   endif
-  if(jsatid == 'metop-b')kidsat=3
-  if(jsatid == 'metop-c')kidsat=5
+  if(jsatid == 'metop-b') then
+    kidsat=3
+    sati=2
+  endif
+  if(jsatid == 'metop-c') then
+    kidsat=5
+    sati=3
+  endif
  
 !  write(6,*)'READ_IASI: mype, mype_root,mype_sub, npe_sub,mpi_comm_sub', &
 !          mype, mype_root,mype_sub,mpi_comm_sub
@@ -440,24 +447,39 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
         infile2=trim(infile)//'_db'  ! Set bufr subset names based on type of data to read
      elseif(llll==4) then
         nrec_startx=nrec_start1
-        infile3=trim(infile)//'4.bfr'
+        infile3=trim(infile)//'3.bfr'
         call closbf(lnbufr)
-        call cobfl('iasibufr4.bfr','r')
+        call cobfl('iasibufr3.bfr','r')
      elseif(llll==5) then
         nrec_startx=nrec_start2
         call closbf(lnbufr)
-        infile3=trim(infile)//'5.bfr'
-        call cobfl('iasibufr5.bfr','r')
+        infile3=trim(infile)//'4.bfr'
+        call cobfl('iasibufr4.bfr','r')
      elseif(llll==6) then
         nrec_startx=nrec_start3
         call closbf(lnbufr)
-        infile3=trim(infile)//'6.bfr'
-        call cobfl('iasibufr6.bfr','r')
+        infile3=trim(infile)//'5.bfr'
+        call cobfl('iasibufr5.bfr','r')
      elseif(llll==7) then
         nrec_startx=nrec_start4
         call closbf(lnbufr)
+        infile3=trim(infile)//'6.bfr'
+        call cobfl('iasibufr6.bfr','r')
+     elseif(llll==8) then
+        nrec_startx=nrec_start5
+        call closbf(lnbufr)
         infile3=trim(infile)//'7.bfr'
         call cobfl('iasibufr7.bfr','r')
+    elseif(llll==7) then
+        nrec_startx=nrec_start6
+        call closbf(lnbufr)
+        infile3=trim(infile)//'8.bfr'
+        call cobfl('iasibufr8.bfr','r')
+     elseif(llll==10) then
+        nrec_startx=nrec_start7
+        call closbf(lnbufr)
+        infile3=trim(infile)//'9.bfr'
+        call cobfl('iasibufr9.bfr','r')
      end if
 
 
@@ -473,7 +495,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
         call mtinfo('tabdir',11,12)
 print *, 'riasia irdmg ', irdmg
      else
-        if (kidsat==4) cycle  ears_db_loop
+!        if (kidsat==4) cycle  ears_db_loop
 !       Open BUFR file
         call closbf(lnbufr)
         open(lnbufr,file=trim(infile2),form='unformatted',status='old',iostat=ierr)
@@ -511,7 +533,8 @@ print *, 'riasia irdmg ', irdmg
               PC2(1,1:nvecs2)=PCs(1,nvecs1+1:nvecs1+nvecs2)
               PC3(1,1:nvecs3)=PCs(1,nvecs1+nvecs2+1:nvecs)
               if (.not.allocated(Rad)) allocate(Rad(nch_iasia))
-              call reconstruct(PC1,PC2,PC3,sqs,Rad)
+            
+              call reconstruct(PC1,PC2,PC3,sqs,Rad,sati)
               bufr_nchan=nch_iasia
               bufr_size=size(temperature,1)
               if ( bufr_size /= bufr_nchan ) then ! Re-allocation if number of channels has changed
@@ -954,7 +977,7 @@ print *, 'riasia irdmg ', irdmg
 
 ! If multiple tasks read input bufr file, allow each tasks to write out
 ! information it retained and then let single task merge files together
-print *, 'riasi ndata', nread,llll,llllend,trim(infile2)
+!print *, 'riasi ndata', nread,llll,llllend,trim(infile2)
 nread=nread/16
   call combine_radobs(mype_sub,mype_root,npe_sub,mpi_comm_sub,&
      nele,itxmax,nread,ndata,data_all,score_crit,nrec)
