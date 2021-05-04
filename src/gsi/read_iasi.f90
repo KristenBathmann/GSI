@@ -180,7 +180,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
   character(len=80) :: allspotlist
   character(len=40) :: infile2
 !KAB
-  character(len=13) :: infile3
+  character(len=15) :: infile3
   character(len=14) :: infile4
   integer(i_kind)   :: jstart
   integer(i_kind)   :: iret,ireadsb,ireadmg,irec,next, nrec_startx
@@ -447,39 +447,46 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
         infile2=trim(infile)//'_db'  ! Set bufr subset names based on type of data to read
      elseif(llll==4) then
         nrec_startx=nrec_start1
-        infile3=trim(infile)//'3.bfr'
+        infile3=trim(infile)//'1.bfr'
         call closbf(lnbufr)
-        call cobfl('iasibufr3.bfr','r')
+        call cobfl(infile3,'r')
+!        call cobfl('iasibufr1.bfr','r')
      elseif(llll==5) then
         nrec_startx=nrec_start2
         call closbf(lnbufr)
-        infile3=trim(infile)//'4.bfr'
-        call cobfl('iasibufr4.bfr','r')
+        infile3=trim(infile)//'2.bfr'
+        call cobfl(infile3,'r')
+!        call cobfl('iasibufr2.bfr','r')
      elseif(llll==6) then
         nrec_startx=nrec_start3
         call closbf(lnbufr)
-        infile3=trim(infile)//'5.bfr'
-        call cobfl('iasibufr5.bfr','r')
+        infile3=trim(infile)//'3.bfr'
+        call cobfl(infile3,'r')
+!        call cobfl('iasibufr3.bfr','r')
      elseif(llll==7) then
         nrec_startx=nrec_start4
         call closbf(lnbufr)
-        infile3=trim(infile)//'6.bfr'
-        call cobfl('iasibufr6.bfr','r')
+        infile3=trim(infile)//'4.bfr'
+        call cobfl(infile3,'r')
+!        call cobfl('iasibufr4.bfr','r')
      elseif(llll==8) then
         nrec_startx=nrec_start5
         call closbf(lnbufr)
-        infile3=trim(infile)//'7.bfr'
-        call cobfl('iasibufr7.bfr','r')
+        infile3=trim(infile)//'5.bfr'
+        call cobfl(infile3,'r')
+!        call cobfl('iasibufr5.bfr','r')
     elseif(llll==7) then
         nrec_startx=nrec_start6
         call closbf(lnbufr)
-        infile3=trim(infile)//'8.bfr'
-        call cobfl('iasibufr8.bfr','r')
+        infile3=trim(infile)//'6.bfr'
+        call cobfl(infile3,'r')
+!        call cobfl('iasibufr6.bfr','r')
      elseif(llll==10) then
         nrec_startx=nrec_start7
         call closbf(lnbufr)
-        infile3=trim(infile)//'9.bfr'
-        call cobfl('iasibufr9.bfr','r')
+        infile3=trim(infile)//'7.bfr'
+        call cobfl(infile3,'r')
+!        call cobfl('iasibufr7.bfr','r')
      end if
 
 

@@ -1169,48 +1169,48 @@ subroutine read_obs(ndata,mype)
 
          if ((obstype=='iasi')) then !.and.(dplat(i)=='metop-a')) then
 !KAB need to change this subroutine
-             call gsi_inquire(lenbytes,lexist1,trim(dfile(i))//'3.bfr',mype)
-             call read_obs_check(lexist1,trim(dfile(i))//'3.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist1,trim(dfile(i))//'1.bfr',mype)
+             call read_obs_check(lexist1,trim(dfile(i))//'1.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc11(i),.true.)
              lexist=lexist .or. lexist1
              if(.not.lexist1) read_wmo_recc11(i)=999999
              len4file=lenbytes/4 
              lexist=lexist .or. lexist1
-             call gsi_inquire(lenbytes,lexist2,trim(dfile(i))//'4.bfr',mype)
-             call read_obs_check (lexist2,trim(dfile(i))//'4.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist2,trim(dfile(i))//'2.bfr',mype)
+             call read_obs_check (lexist2,trim(dfile(i))//'2.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc12(i),.true.)
              if(.not.lexist2) read_wmo_recc12(i)=999999
              len4file=len4file+lenbytes/4 
              lexist=lexist .or. lexist2
-             call gsi_inquire(lenbytes,lexist3,trim(dfile(i))//'5.bfr',mype)
-             call read_obs_check(lexist3,trim(dfile(i))//'5.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist3,trim(dfile(i))//'3.bfr',mype)
+             call read_obs_check(lexist3,trim(dfile(i))//'3.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc13(i),.true.)
              if(.not.lexist3) read_wmo_recc13(i)=999999
              len4file=len4file+lenbytes/4
              lexist=lexist .or. lexist3
-             call gsi_inquire(lenbytes,lexist4,trim(dfile(i))//'6.bfr',mype)
-             call read_obs_check(lexist4,trim(dfile(i))//'6.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist4,trim(dfile(i))//'4.bfr',mype)
+             call read_obs_check(lexist4,trim(dfile(i))//'4.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc14(i),.true.)
              if(.not.lexist4) read_wmo_recc14(i)=999999
              len4file=len4file+lenbytes/4 !KAB check this
              lexist=lexist .or. lexist4
 
-             call gsi_inquire(lenbytes,lexist5,trim(dfile(i))//'7.bfr',mype)
-             call read_obs_check(lexist5,trim(dfile(i))//'7.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist5,trim(dfile(i))//'5.bfr',mype)
+             call read_obs_check(lexist5,trim(dfile(i))//'5.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc15(i),.true.)
              if(.not.lexist5) read_wmo_recc15(i)=999999
              len4file=len4file+lenbytes/4
              lexist=lexist .or. lexist5
 
-             call gsi_inquire(lenbytes,lexist6,trim(dfile(i))//'8.bfr',mype)
-             call read_obs_check(lexist6,trim(dfile(i))//'8.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist6,trim(dfile(i))//'6.bfr',mype)
+             call read_obs_check(lexist6,trim(dfile(i))//'6.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc16(i),.true.)
              if(.not.lexist6) read_wmo_recc16(i)=999999
              len4file=len4file+lenbytes/4 !KAB check this
              lexist=lexist .or. lexist6
 
-             call gsi_inquire(lenbytes,lexist7,trim(dfile(i))//'9.bfr',mype)
-             call read_obs_check(lexist7,trim(dfile(i))//'9.bfr',dplat(i),dtype(i),minuse, &
+             call gsi_inquire(lenbytes,lexist7,trim(dfile(i))//'7.bfr',mype)
+             call read_obs_check(lexist7,trim(dfile(i))//'7.bfr',dplat(i),dtype(i),minuse, &
                  read_wmo_recc17(i),.true.)
              if(.not.lexist7) read_wmo_recc17(i)=999999
              len4file=len4file+lenbytes/4 !KAB check this
