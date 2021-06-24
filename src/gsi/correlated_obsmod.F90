@@ -205,6 +205,8 @@ type ObsErrorCov
      integer(i_kind)   :: nctot=-1                    ! total number of channels (active+passive)
      integer(i_kind)   :: method    =-1               ! define method of computation
      real(r_kind)      :: kreq      =-99._r_kind      ! Weston et al-like spectrum adjustment factor
+     real(r_kind) :: kreq_surf=-99._r_kind
+     real(r_kind) :: kreq_wv=-99._r_kind
      real(r_kind)      :: kmut      =-99._r_kind      ! multiplicative inflation factor
      character(len=20) :: mask      ='global'         ! Apply covariance for profiles over all globe
      integer(i_kind),pointer :: indxR(:)   =>NULL()   ! indexes of active channels in between 1 and nchanl
@@ -262,9 +264,9 @@ integer(i_kind) luin,ii,ntot,nrows,method
 character(len=MAXSTR),allocatable,dimension(:):: utable
 character(len=20) instrument, mask
 character(len=30) filename
-real(r_kind) kreq4
+real(r_kind) kreq4,kreq4_surf,kreq4_wv
 real(r_kind) kmut4
-real(r_kind) kreq
+real(r_kind) kreq,kreq_surf,kreq_wv
 real(r_kind) kmut
 character(len=*),parameter::myname_=myname//'*ini_'
 
@@ -301,19 +303,21 @@ allocate(GSI_BundleErrorCov(ninstr))
 ! Count variables first
 if(iamroot_) write(6,*) myname_,': Correlated-Obs for the following instruments'
 do ii=1,ninstr
-   read(utable(ii),*) instrument, method, kreq4, kmut4, mask, filename ! if adding col to table leave fname as last
+   read(utable(ii),*) instrument, method, kreq4, kreq4_surf,kreq4_wv, kmut4, mask, filename ! if adding col to table leave fname as last
    instruments(ii) = trim(instrument)
    idnames(ii) = trim(instrument)//':'//trim(mask)
    kreq=kreq4
+   kreq_surf=kreq4_surf
+   kreq_wv=kreq4_Wv
    kmut=kmut4
    if(iamroot_) then
-      write(6,'(1x,2(a,1x),i4,1x,2f20.16,1x,a)') trim(instrument), trim(mask), method, kreq4, kmut4, trim(filename)
+      write(6,'(1x,2(a,1x),i4,1x,4f20.16,1x,a)') trim(instrument), trim(mask), method, kreq4, kreq4_surf,kreq4_wv,kmut4, trim(filename)
    endif
 !  check method validity
    if(ALL(methods_avail/=method)) then
      call die(myname_,' invalid choice of method, aborting')
    endif
-   call set_(trim(instrument),trim(filename),mask,method,kreq,kmut,GSI_BundleErrorCov(ii))
+   call set_(trim(instrument),trim(filename),mask,method,kreq,kreq_surf,kreq_wv,kmut,GSI_BundleErrorCov(ii))
 enddo
 
 ! release table
@@ -332,7 +336,7 @@ end subroutine ini_
 !
 ! !INTERFACE:
 !
-subroutine set_(instrument,fname,mask,method,kreq,kmut,ErrorCov)
+subroutine set_(instrument,fname,mask,method,kreq,kreq_surf,kreq_wv,kmut,ErrorCov)
 use radinfo, only: nusis,iuse_rad,jpch_rad
 implicit none
 
@@ -342,7 +346,7 @@ character(len=*),intent(in) :: instrument   ! name of instrument
 character(len=*),intent(in) :: fname        ! filename holding cov(R)
 character(len=*),intent(in) :: mask         ! land/sea/etc mask
 integer,intent(in):: method                 ! method to apply when using this cov(R)
-real(r_kind),intent(in) :: kreq             ! conditioning factor for cov(R)
+real(r_kind),intent(in) :: kreq,kreq_surf,kreq_wv             ! conditioning factor for cov(R)
 real(r_kind),intent(in) :: kmut             ! multiplicative inflation factor for cov(R)
 type(ObsErrorCov),intent(inout) :: ErrorCov ! cov(R) for this instrument
 
@@ -380,6 +384,8 @@ logical :: corr_obs
    ErrorCov%name = trim(instrument)//':'//trim(mask)
    ErrorCov%method = method
    ErrorCov%kreq   = kreq
+   ErrorCov%kreq_surf   = kreq_surf
+   ErrorCov%kreq_wv   = kreq_wv
    ErrorCov%kmut   = kmut
 
    inquire(file=trim(fname), exist=corr_obs)
@@ -580,12 +586,12 @@ type(ObsErrorCov),intent(inout) :: ErrorCov
 !-------------------------------------------------------------------------
 !BOC
 character(len=*), parameter :: myname_=myname//'*solver_'
-real(r_kind) lambda_max,lambda_min,lambda_inc
+real(r_kind) lambda_max,lambda_min,lambda_inc,kadd
 integer(i_kind) ii,jj,ndim
 logical adjspec
 real(r_kind),allocatable,dimension(:,:):: Revecs
 real(r_kind),allocatable,dimension(:):: invstd
-
+integer(i_kind):: isurf,iwv
 ndim = size(ErrorCov%R,1)
 allocate(Revecs(ndim,ndim))
  
@@ -605,7 +611,13 @@ if ( ErrorCov%method==0 .or. ErrorCov%method==3 ) then
       call rebuild_rcov_
    endif
 endif ! method=0
-
+if (ErrorCov%nch_active==174) then !iasi
+  isurf=110
+  iwv=165
+else !cris
+  isurf=78
+  iwv=94
+endif
 ! This takes only corr(Re) and 
 ! any reconditioning is of correlation matrix
 if ( ErrorCov%method==1 ) then
@@ -640,16 +652,22 @@ endif ! method=1
 
 ! This does the actual full eigendecomposition of the R matrix
 ! Here, recondioning is of covariance matrix
+!KAB
 if ( ErrorCov%method==2 ) then
    Revecs=ErrorCov%R
    call decompose_(trim(ErrorCov%name),ErrorCov%Revals,Revecs,ndim,.true.)
-   if ((ErrorCov%kreq>zero).or.(ErrorCov%kmut>one)) then
+   if ((ErrorCov%kreq>zero).or.(ErrorCov%kmut>one).or.(ErrorCov%kreq_surf>0.0).or.(ErrorCov%kreq_wv>0.0)) then
       do jj=1,ndim
          do ii=1,ndim
            if(ii==jj) then
              ! inflated by constant standard deviation 
+             kadd=ErrorCov%kreq
+             if ((ii >=isurf).and.(ii<iwv)) kadd=ErrorCov%kreq_surf
+             if (ii>=iwv) kadd=ErrorCov%kreq_wv
+write(6,*) 'Rcov 1 ', kadd,ii,ErrorCov%R(ii,ii)
              ErrorCov%R(ii,ii)=ErrorCov%kmut*ErrorCov%kmut*&
-                     (sqrt(ErrorCov%R(ii,ii))+ErrorCov%kreq)**2  
+                     (sqrt(ErrorCov%R(ii,ii))+kadd)**2  
+write(6,*) 'Rcov 2 ', kadd,ii,ErrorCov%R(ii,ii)
            else
              ErrorCov%R(ii,jj)=ErrorCov%kmut*ErrorCov%kmut*ErrorCov%R(ii,jj)
            endif
