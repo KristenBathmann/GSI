@@ -664,10 +664,10 @@ if ( ErrorCov%method==2 ) then
              kadd=ErrorCov%kreq
              if ((ii >=isurf).and.(ii<iwv)) kadd=ErrorCov%kreq_surf
              if (ii>=iwv) kadd=ErrorCov%kreq_wv
-write(6,*) 'Rcov 1 ', kadd,ii,ErrorCov%R(ii,ii)
+!write(6,*) 'Rcov 1 ', kadd,ii,ErrorCov%R(ii,ii)
              ErrorCov%R(ii,ii)=ErrorCov%kmut*ErrorCov%kmut*&
                      (sqrt(ErrorCov%R(ii,ii))+kadd)**2  
-write(6,*) 'Rcov 2 ', kadd,ii,ErrorCov%R(ii,ii)
+!write(6,*) 'Rcov 2 ', kadd,ii,ErrorCov%R(ii,ii)
            else
              ErrorCov%R(ii,jj)=ErrorCov%kmut*ErrorCov%kmut*ErrorCov%R(ii,jj)
            endif
