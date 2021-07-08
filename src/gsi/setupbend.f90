@@ -612,7 +612,8 @@ subroutine setupbend(obsLL,odiagLL, &
        rdiagbuf( 6,i)  = ten*exp(dpressure) ! pressure at obs location (hPa) if monotone grid
        rdiagbuf(18,i)  = trefges ! temperature at obs location (Kelvin) if monotone grid
        rdiagbuf(21,i)  = qrefges ! specific humidity at obs location (kg/kg) if monotone grid
-
+       commdat=.false.
+       if (data(isatid,i)>=265 .and. data(isatid,i)<=269) commdat=.true.
        if (.not. qcfail(i)) then ! not SR
 
 !        Modify error to account for representativeness error. 
@@ -641,7 +642,7 @@ subroutine setupbend(obsLL,odiagLL, &
            endif
          else 
 !        CDAAC-type processing
-           if ((data(isatid,i) > 749).and.(data(isatid,i) < 756)) then
+           if (((data(isatid,i) > 749).and.(data(isatid,i) < 756)).or.commdat) then
               if ((data(ilate,i)> r40).or.(data(ilate,i)< -r40)) then
                 if (alt <= 8.0_r_kind) then
                   repe_gps=-1.0304261_r_kind+0.3203316_r_kind*alt+0.0141337_r_kind*alt**2
@@ -679,11 +680,7 @@ subroutine setupbend(obsLL,odiagLL, &
 
          repe_gps=exp(repe_gps) ! one/modified error in (rad-1*1E3)
          repe_gps= r1em3*(one/abs(repe_gps)) ! modified error in rad
-         commdat=.false.
-         if (data(isatid,i)>=265 .and. data(isatid,i)<=269) then 
-             commdat=.true.
-             repe_gps=commgpserrinf*repe_gps ! Inflate error for commercial data
-         endif
+         if (commdat) repe_gps=commgpserrinf*repe_gps ! Inflate error for commercial data
          ratio_errors(i) = data(ier,i)/abs(repe_gps)
   
          error(i)=one/data(ier,i) ! one/original error
@@ -800,7 +797,7 @@ subroutine setupbend(obsLL,odiagLL, &
                else   
 !                  Statistics QC check if obs passed gross error check
                    cutoff=zero
-                   if ((data(isatid,i) > 749).and.(data(isatid,i) < 756)) then
+                   if (((data(isatid,i) > 749).and.(data(isatid,i) < 756)).or.commdat) then
                       cutoff1=(-4.725_r_kind+0.045_r_kind*alt+0.005_r_kind*alt**2)*one/two
                    else
                       cutoff1=(-4.725_r_kind+0.045_r_kind*alt+0.005_r_kind*alt**2)*two/three
@@ -811,12 +808,12 @@ subroutine setupbend(obsLL,odiagLL, &
                    else
                       cutoff3=0.005_r_kind*trefges**2-2.3_r_kind*trefges+266_r_kind
                    endif
-                   if ((data(isatid,i) > 749).and.(data(isatid,i) < 756)) then
+                   if (((data(isatid,i) > 749).and.(data(isatid,i) < 756)).or.commdat) then
                       cutoff3=cutoff3*one/two
                    else
                       cutoff3=cutoff3*two/three
                    end if
-                   if ((data(isatid,i) > 749).and.(data(isatid,i) < 756)) then
+                   if (((data(isatid,i) > 749).and.(data(isatid,i) < 756)).or.commdat) then
                       cutoff4=(four+eight*cos(data(ilate,i)*deg2rad))*one/two
                    else
                       cutoff4=(four+eight*cos(data(ilate,i)*deg2rad))*two/three
