@@ -489,7 +489,6 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
 !        call cobfl('iasibufr7.bfr','r')
      end if
 
-
 !KABB
      if (llll>=4) then
         open(unit=lnbufr,file='/dev/null')
@@ -500,7 +499,6 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
         if (.not.allocated(Rad)) allocate(Rad(nch_iasia))
         call openbf(lnbufr,'SEC3',lnbufr)
         call mtinfo('tabdir',11,12)
-print *, 'riasia irdmg ', irdmg
      else
 !        if (kidsat==4) cycle  ears_db_loop
 !       Open BUFR file
@@ -970,7 +968,7 @@ print *, 'riasia irdmg ', irdmg
      enddo read_subset
 
      call closbf(lnbufr)
-  print *, 'riasi loop nread', nread, llll
+
   end do ears_db_loop
   deallocate(temperature, allchan, bufr_chan_test)
   deallocate(channel_number,sc_index)
