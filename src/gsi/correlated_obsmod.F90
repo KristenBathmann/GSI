@@ -368,7 +368,7 @@ type(ObsErrorCov),intent(inout) :: ErrorCov ! cov(R) for this instrument
 !BOC
 
 character(len=*),parameter :: myname_=myname//'*set'
-integer(i_kind) nch_active,lu,ii,jj,ioflag,iprec,nctot,coun,couns,istart
+integer(i_kind) nch_active,lu,ii,jj,ioflag,iprec,nctot,coun,couns,istart,indR
 integer(i_kind),dimension(:),allocatable:: indxR
 real(r_kind),dimension(:,:),allocatable:: Rcov
 real(r_single),allocatable, dimension(:,:) :: readR4  ! nch_active x nch_active x ninstruments
@@ -417,7 +417,8 @@ logical :: corr_obs
 !                       ' is not initiallized. Turning off Correlated Error'
 !         return
 !      endif
-      allocate(indxR(nch_active),Rcov(nch_active,nch_active))
+      allocate(indxR(nch_active),Rcov(nctot,nctot))
+      Rcov=0.0_r_kind
       read(lu,IOSTAT=ioflag) indxR
       if(ioflag/=0) call die(myname_,' failed to read indx from '//trim(fname))
 !     Read GSI-like channel numbers used in estimating R for this instrument
@@ -429,7 +430,7 @@ logical :: corr_obs
         read(lu,IOSTAT=ioflag) readR4
         if(ioflag/=0) call die(myname_,' failed to read R from '//trim(fname))
  !       ErrorCov%R = readR4
-        Rcov=readR4
+        Rcov(1:nch_active,1:nch_active)=readR4
         deallocate(readR4)
       endif
       if(iprec==8) then
@@ -437,33 +438,61 @@ logical :: corr_obs
         read(lu,IOSTAT=ioflag) readR8
         if(ioflag/=0) call die(myname_,' failed to read R from '//trim(fname))
 !        ErrorCov%R = readR8
-        Rcov=readR8
+        Rcov(1:nch_active,1:nch_active)=readR8
         deallocate(readR8)
       endif
       couns=0
       ErrorCov%R=0.0_r_kind 
       coun=0
-      do ii=1,nctot !KAB need to update nctot to what is in satinfo?
-           if (iuse_rad(istart+ii)>0) then
-              coun=coun+1
-              ErrorCov%R(coun,coun)=varch(istart+ii)*varch(istart+ii)
-           endif
-      enddo
-      do ii=1,nctot
+      do ii=1,nctot !this should not be nctot, but something from satinfo KAB
          if (iuse_rad(ii+istart)>0) then
             couns=couns+1
-            do jj=1,nch_active 
-               if ((iuse_rad(istart+indxR(jj))>0)) then
-!if (couns==1) print *, 'Rcov coun ', nch_active, jj
-                  ErrorCov%R(couns,jj)=Rcov(couns,jj)
-                  ErrorCov%R(jj,couns)=Rcov(jj,couns)
-                endif
-            enddo
-            ErrorCov%indxR(couns)=ii!satind(ii,1)
+            ErrorCov%indxR(couns)=ii
          endif
       enddo
-!print *, 'ind file ', nctot, indxR(1:10)
-!print *, 'indR ', nctot,ErrorCov%indxR(1:10)
+print *, 'nch ', nch_active, ErrorCov%nch_active
+!Add rows and columns for active channels in the satinfo that are not in the covariance file
+     do ii=1,ErrorCov%nch_active
+        indR=0
+        do jj=1,nch_active !KAB can make this more efficient by starting at indR instead of 1
+           if (indxR(jj)==ErrorCov%indxR(ii)) then
+              indR=jj
+              exit
+           endif
+        enddo
+        if (indR==0) then
+!           do jj=ErrorCov%nch_active-1,ii+1
+           do jj=nctot-1,ii,-1
+              Rcov(jj+1,:)=Rcov(jj,:)
+              Rcov(:,jj+1)=Rcov(:,jj)
+           enddo
+           Rcov(ii,:)=0.0_r_kind
+           Rcov(:,ii)=0.0_r_kind
+           Rcov(ii,ii)=varch(istart+ErrorCov%indxR(ii))*varch(istart+ErrorCov%indxR(ii))
+print *, 'Rcov add ', ii,sqrt(Rcov(ii,ii))
+        endif
+     enddo
+!Remove rows and columns that are in the covariance file, but not in the satinfo
+      do ii=1,nch_active
+        indR=0
+        do jj=1,ErrorCov%nch_active
+           if (ErrorCov%indxR(jj)==indxR(ii)) then
+              indR=jj
+              exit
+            endif
+        enddo
+        if (indR==0) then
+           do jj=ii,nctot
+              Rcov(jj,:)=Rcov(jj+1,:)
+              Rcov(:,jj)=Rcov(:,jj+1) 
+           enddo
+         endif
+      enddo
+ErrorCov%R=Rcov(1:ErrorCov%nch_active,1:ErrorCov%nch_active)
+print *, 'Rcov row ',nctot,ErrorCov%R(1,1:15)
+!print *, 'Rcov col',nctot,ErrorCov%R(1:15,1)
+print *, 'ind file ', nch_active, indxR(1:10)
+print *, 'indR ', ErrorCov%nch_active,ErrorCov%indxR(1:10)
 !print *, 'iuse ', nctot, iuse_rad(istart+1:istart+10)
 !print *, 'indxR cov', nctot,indxR(1:4)
 !     Done reading file
@@ -472,7 +501,7 @@ logical :: corr_obs
       if (iamroot_) write(6,*) 'No Rcov files found.  Turning off Correlated Error'
       return
    end if
-   deallocate(indxR,Rcov)
+!   deallocate(indxR,Rcov)
 !  If method<0 there is really nothing else to do
 !  ----------------------------------------------
    if (method<0) then
@@ -508,7 +537,7 @@ logical :: corr_obs
        endif
        deallocate(diag)
    endif
-
+   deallocate(indxR,Rcov)
    initialized_=.true.
 end subroutine set_
 !EOC
@@ -982,10 +1011,9 @@ subroutine upd_varch_
                   endif 
                enddo
                ncp=count(ircv>0) ! number of active channels in profile
-               if(ncp/=nch_active) then
-print *, 'ncp nch ',ncp, nch_active !KAB
-                  call die(myname_,'serious inconsistency in handling correlated obs')
-               endif
+!KAB               if(ncp/=nch_active) then
+!                  call die(myname_,'serious inconsistency in handling correlated obs')
+!               endif
                allocate(IRsubset(ncp)) ! these indexes apply to the matrices/vec in ErrorCov
                allocate(IJsubset(ncp)) ! these indexes in 1 to nchanl
                iii=0;jjj=0
