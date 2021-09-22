@@ -443,7 +443,7 @@ logical :: corr_obs
       endif
       couns=0
       ErrorCov%R=0.0_r_kind 
-      coun=0
+!KAB can probably get rid of coun?      coun=0
       do ii=1,nctot !this should not be nctot, but something from satinfo KAB
          if (iuse_rad(ii+istart)>0) then
             couns=couns+1
@@ -482,17 +482,17 @@ print *, 'Rcov add ', ii,sqrt(Rcov(ii,ii))
             endif
         enddo
         if (indR==0) then
-           do jj=ii,nctot
+           do jj=ii,nctot-1
               Rcov(jj,:)=Rcov(jj+1,:)
               Rcov(:,jj)=Rcov(:,jj+1) 
            enddo
          endif
       enddo
-ErrorCov%R=Rcov(1:ErrorCov%nch_active,1:ErrorCov%nch_active)
-print *, 'Rcov row ',nctot,ErrorCov%R(1,1:15)
+ErrorCov%R(1:ErrorCov%nch_active,1:ErrorCov%nch_active)=Rcov(1:ErrorCov%nch_active,1:ErrorCov%nch_active)
+print *, 'Rcov row ',nctot,ErrorCov%R(1,:)
 !print *, 'Rcov col',nctot,ErrorCov%R(1:15,1)
-print *, 'ind file ', nch_active, indxR(1:10)
-print *, 'indR ', ErrorCov%nch_active,ErrorCov%indxR(1:10)
+print *, 'ind file ', nch_active, indxR
+print *, 'indR ', ErrorCov%nch_active,ErrorCov%indxR
 !print *, 'iuse ', nctot, iuse_rad(istart+1:istart+10)
 !print *, 'indxR cov', nctot,indxR(1:4)
 !     Done reading file
