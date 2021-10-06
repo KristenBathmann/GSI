@@ -837,7 +837,10 @@ deallocate(Evecs,noise,rmean)
                nusis(j)='iasi_metop-b'
                ja=ja+1
             endif
-            if (index(nusis(j),'metop-c') /= 0) nusis(j)='iasi_metop-c'
+            if (index(nusis(j),'metop-c') /= 0) then
+              nusis(j)='iasi_metop-c'
+              ja=ja+1
+            endif
        end select 
 
        if ( .not. diag_rad .and. iuse_rad(j) < 0 .and. iextra_det(j) < 0 .and. &
@@ -881,7 +884,7 @@ deallocate(Evecs,noise,rmean)
     allocate(indR(ja),wav(ja))
     ja=0
     do jj=1,j
-      if ((nusis(jj)=='iasi_metop-a').or.(nusis(jj)=='iasi_metop=b')) then
+      if ((nusis(jj)=='iasi_metop-a').or.(nusis(jj)=='iasi_metop=b').or.(nusis(jj)=='iasi_metop-c')) then
 !        if (iuse_rad(j)>0) then
           ja=ja+1
           indR(ja)=nuchan(jj)

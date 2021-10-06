@@ -121,7 +121,7 @@ real(r_double),intent(out):: BT
 real,parameter:: n1=1.191109E-16
 real,parameter:: n2=0.01438432
 integer::dc,r
-real(8):: ln
+real(r_double):: ln
 
 BT=0.0_r_double
 ln=n1*(wave**3)
