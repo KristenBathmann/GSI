@@ -821,8 +821,8 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
            endif !cscale KAB
 !          Read IASI channel number(CHNM) and radiance (SCRA)
            if (llll>=4) then !KABB
-              allchan(1,:)=indR
-              allchan(2,:)=Rad
+              allchan(1,1:satinfo_nchan)=indR
+              allchan(2,1:satinfo_nchan)=Rad
            else
               call ufbseq(lnbufr,allchan,2,bufr_nchan,iret,'IASICHN')
               if (iret /= bufr_nchan) then
@@ -851,6 +851,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
               sc_chan = sc_index(i)
               if ( bufr_index(i) == 0 ) cycle channel_loop
               bufr_chan = bufr_index(i)
+              if (llll>=4) bufr_chan=i
 !             check that channel number is within reason
               if (( allchan(2,bufr_chan) > zero .and. allchan(2,bufr_chan) < 99999._r_kind)) then  ! radiance bounds
                  if (llll<4) then !KAB
@@ -868,6 +869,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
                  call crtm_planck_temperature(sensorindex,sc_chan,radiance,temperature(bufr_chan))
               else
                  temperature(bufr_chan) = tbmin
+!if (i==1)                  print *, 'readiasi', Rad(i),allchan(1,bufr_chan),allchan(2,bufr_chan),i,bufr_chan,bufr_nchan
               endif
            end do channel_loop
 !          Check for reasonable temperature values
@@ -880,7 +882,7 @@ subroutine read_iasi(mype,val_iasi,ithin,isfcalc,rmesh,jsatid,gstime,&
               endif
            end do skip_loop
 
-           if(iskip > 0 .and. print_verbose)write(6,*) ' READ_IASI : iskip > 0 ',iskip
+           if(iskip > 0 .and. print_verbose)write(6,*) ' READ_IASI : iskip > 0 ',iskip,temperature(bufr_index(1))
            if( iskip > 0 ) cycle read_loop 
 
            crit1=crit1 + ten*float(iskip)
