@@ -1,7 +1,7 @@
 #!/bin/sh
 #This program reads the noscrub/archive/exp/fits/fit* files 
 #and puts them into a format that matlab can read
-#Kristen Bathmannn
+#Kristen Bathmann
 #2018
 
 ndate=/scratch1/NCEPDEV/da/Kristen.Bathmann/Analysis_util/ndate

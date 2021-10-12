@@ -1,6 +1,6 @@
 %This is the main program, to generate a fit2obs scorecard
 %from the /noscrub/archive/exp/fits/fit* files
-%Kristen Bathmannn
+%Kristen Bathmann
 %2018
 
 
