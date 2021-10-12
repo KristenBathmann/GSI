@@ -9,7 +9,7 @@ close all
 %fdir must be the same as wrkdir in run_extract.sh
 fdir='/scratch1/NCEPDEV/stmp4/Kristen.Bathmann/fitdo2';
 pngname='do2'; %appears only in the name of the png's.
-ex=1; %set =1 to make extra plots. Search for "if (ex>0)" to look at this section
+ex=0; %set =1 to make extra plots. Search for "if (ex>0)" to look at this section
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 file_acar=[fdir,'/Acar_fits'];
